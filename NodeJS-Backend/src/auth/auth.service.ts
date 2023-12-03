@@ -4,12 +4,16 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as argon from 'argon2';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { SignInDTO, SignUpDTO } from './dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+  ) {}
   async signUp(dto: SignUpDTO) {
     let user = await this.prisma.user.findUnique({
       where: {
@@ -23,6 +27,7 @@ export class AuthService {
         ...dto,
       },
     });
+    delete user.password;
     return user;
   }
 
@@ -35,6 +40,8 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const access = await argon.verify(user.password, dto.password);
     if (!access) throw new UnauthorizedException('Invalid credentials');
-    return access;
+    const token = await this.jwt.signAsync({ sub: user.id });
+    const response = { token };
+    return response;
   }
 }
