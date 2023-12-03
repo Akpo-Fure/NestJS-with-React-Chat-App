@@ -36,9 +36,29 @@ export class AuthService {
         ...dto,
       },
     });
+
+    const verifyToken = crypto.randomBytes(32).toString('hex');
+
+    const userToken = crypto
+      .createHash('sha256')
+      .update(verifyToken)
+      .digest('hex');
+
+    const userTokenExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    user = await this.prisma.user.update({
+      where: {
+        email: dto.email,
+      },
+      data: {
+        verifyEmailToken: userToken,
+        verifyEmailExpires: userTokenExpires,
+      },
+    });
     delete user.password;
+    const response = { token: verifyToken, user };
     // await this.mailer.sendEmail({ to: user.email }, null, null);
-    return user;
+    return response;
   }
 
   async signIn(dto: SignInDTO) {
@@ -50,6 +70,8 @@ export class AuthService {
     if (!user) throw new UnauthorizedException('Invalid credentials');
     const access = await argon.verify(user.password, dto.password);
     if (!access) throw new UnauthorizedException('Invalid credentials');
+    if (!user.verified)
+      throw new UnauthorizedException('Email is not verified');
     const token = await this.jwt.signAsync({ sub: user.id });
     const response = { token };
     return response;
@@ -78,8 +100,8 @@ export class AuthService {
         email: dto.email,
       },
       data: {
-        verifyEmailToken: userToken,
-        verifyEmailExpires: userTokenExpires,
+        passwordResetToken: userToken,
+        passwordResetExpires: userTokenExpires,
       },
     });
     delete user.password;
@@ -94,6 +116,41 @@ export class AuthService {
       .createHash('sha256')
       .update(resetToken)
       .digest('hex');
+
+    let user = await this.prisma.user.findFirst({
+      where: {
+        passwordResetToken: hashedToken,
+        passwordResetExpires: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!user) throw new NotFoundException('Token is invalid or has expired');
+
+    const password = await argon.hash(dto.password);
+
+    user = await this.prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        password,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+      },
+    });
+
+    delete user.password;
+    return user;
+  }
+
+  async verifyEmail(verifyToken: string) {
+    const hashedToken = crypto
+      .createHash('sha256')
+      .update(verifyToken)
+      .digest('hex');
+
     let user = await this.prisma.user.findFirst({
       where: {
         verifyEmailToken: hashedToken,
@@ -102,18 +159,18 @@ export class AuthService {
         },
       },
     });
+
     if (!user) throw new NotFoundException('Token is invalid or has expired');
-    const password = await argon.hash(dto.password);
+
     user = await this.prisma.user.update({
       where: {
-        id: user.id,
+        email: user.email,
       },
       data: {
-        password,
-        verifyEmailToken: null,
-        verifyEmailExpires: null,
+        verified: true,
       },
     });
+
     delete user.password;
     return user;
   }
