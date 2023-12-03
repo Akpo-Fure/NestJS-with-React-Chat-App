@@ -168,6 +168,8 @@ export class AuthService {
       },
       data: {
         verified: true,
+        verifyEmailToken: null,
+        verifyEmailExpires: null,
       },
     });
 

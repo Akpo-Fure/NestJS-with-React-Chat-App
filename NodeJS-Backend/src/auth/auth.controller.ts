@@ -29,7 +29,7 @@ export class AuthController {
     return await this.authService.signIn(dto);
   }
 
-  @Post('verifyemail/:token')
+  @Patch('verifyemail/:token')
   async verifyEmail(@Param('token') verifyToken: string) {
     return await this.authService.verifyEmail(verifyToken);
   }
