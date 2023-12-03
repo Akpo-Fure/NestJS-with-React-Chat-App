@@ -7,12 +7,14 @@ import * as argon from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { SignInDTO, SignUpDTO } from './dto';
+import { MailerService } from '../mailer/mailer.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
+    private mailer: MailerService,
   ) {}
   async signUp(dto: SignUpDTO) {
     let user = await this.prisma.user.findUnique({
@@ -28,6 +30,7 @@ export class AuthService {
       },
     });
     delete user.password;
+    await this.mailer.sendEmail({ to: user.email }, null, null);
     return user;
   }
 
