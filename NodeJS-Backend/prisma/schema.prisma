@@ -11,12 +11,14 @@ datasource db {
 }
 
 model User {
-  id         String          @id @default(auto()) @map("_id") @db.ObjectId
-  name       String
-  email      String          @unique
-  phoneNo    String          @unique
-  password   String
-  chatSpaces ChatSpaceUser[]
+  id                 String          @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  email              String          @unique
+  phoneNo            String          @unique
+  password           String
+  verifyEmailToken   String?
+  verifyEmailExpires DateTime?
+  chatSpaces         ChatSpaceUser[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -34,3 +34,16 @@ export class SignInDTO {
   @IsString()
   password: string;
 }
+
+export class ForgotPasswordDTO {
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+}
+
+export class ResetPasswordDTO {
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(6)
+  password: string;
+}
