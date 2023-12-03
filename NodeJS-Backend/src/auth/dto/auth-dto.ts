@@ -3,7 +3,7 @@ import {
   IsNotEmpty,
   IsPhoneNumber,
   IsString,
-  IsStrongPassword,
+  MinLength,
 } from 'class-validator';
 
 export class SignUpDTO {
@@ -20,6 +20,17 @@ export class SignUpDTO {
   phoneNo: string;
 
   @IsNotEmpty()
-  @IsStrongPassword()
+  @IsString()
+  @MinLength(6)
+  password: string;
+}
+
+export class SignInDTO {
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @IsNotEmpty()
+  @IsString()
   password: string;
 }
