@@ -11,26 +11,40 @@ datasource db {
 }
 
 model User {
-  id                   String          @id @default(auto()) @map("_id") @db.ObjectId
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
   name                 String
-  email                String          @unique
-  phoneNo              String          @unique
+  email                String            @unique
+  phoneNo              String            @unique
   password             String
-  verified             Boolean         @default(false)
+  verified             Boolean           @default(false)
   verifyEmailToken     String?
   verifyEmailExpires   DateTime?
   passwordResetToken   String?
   passwordResetExpires DateTime?
+  message              Message[]
   chatSpaces           ChatSpaceUser[]
+  ChatSpaceInvite      ChatSpaceInvite[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Message {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  content     String
+  senderId    String    @db.ObjectId
+  chatSpaceId String    @db.ObjectId
+  sender      User      @relation(fields: [senderId], references: [id])
+  chatSpace   ChatSpace @relation(fields: [chatSpaceId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model ChatSpace {
-  id              String            @id @default(auto()) @map("_id") @db.ObjectId
-  users           ChatSpaceUser[]
-  chatSpaceInvite ChatSpaceInvite[]
+  id      String          @id @default(auto()) @map("_id") @db.ObjectId
+  users   ChatSpaceUser[]
+  message Message[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -48,10 +62,11 @@ model ChatSpaceUser {
 }
 
 model ChatSpaceInvite {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  chatSpaceId String    @db.ObjectId
-  email       String
-  chatSpace   ChatSpace @relation(fields: [chatSpaceId], references: [id])
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  senderId   String @db.ObjectId
+  receiverId String @db.ObjectId
+  email      String
+  user       User   @relation(fields: [senderId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
