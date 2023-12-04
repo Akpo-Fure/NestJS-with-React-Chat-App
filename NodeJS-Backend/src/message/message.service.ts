@@ -13,6 +13,10 @@ export class MessageService {
         senderId: userId,
         chatSpaceId,
       },
+      select: {
+        id: true,
+        content: true,
+      },
     });
     return message;
   }
