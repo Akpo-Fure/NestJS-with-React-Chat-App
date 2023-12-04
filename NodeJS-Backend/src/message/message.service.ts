@@ -16,4 +16,24 @@ export class MessageService {
     });
     return message;
   }
+
+  async receiveMessages(chatSpaceId: string) {
+    const messages = await this.prisma.message.findMany({
+      where: {
+        chatSpaceId,
+      },
+      orderBy: {
+        createdAt: 'asc',
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+    return messages;
+  }
 }

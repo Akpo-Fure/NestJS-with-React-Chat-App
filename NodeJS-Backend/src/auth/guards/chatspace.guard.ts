@@ -13,18 +13,18 @@ export class ChatSpaceGuard implements CanActivate {
 
     const user = request.user;
 
-    const chatSpaceId = request.params?.id || request.params?.chatSpaceId;
+    const chatSpaceId = request.params?.id || request.params?.chatspaceId;
     if (!chatSpaceId)
-      throw new UnauthorizedException('Workspace Id not provided');
+      throw new UnauthorizedException('Chatspace Id not provided');
 
     const chatSpaceUser = user.chatSpaces?.find(
       (chatSpace: ChatSpaceUser) => chatSpace.chatSpaceId === chatSpaceId,
     );
 
     if (!chatSpaceUser)
-      throw new UnauthorizedException('Unauthorized access to this workspace');
+      throw new UnauthorizedException('Unauthorized access to this chatspace');
 
-    request.workspaceUser = chatSpaceUser;
+    request.chatSpaceUser = chatSpaceUser;
 
     return true;
   }

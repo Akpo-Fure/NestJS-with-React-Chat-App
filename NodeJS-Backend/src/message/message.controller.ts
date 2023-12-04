@@ -1,5 +1,5 @@
-import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
-import { JwtGuard, ChatSpaceGuard } from 'src/auth/guards';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { JwtGuard, ChatSpaceGuard } from '../auth/guards';
 import { SendMessageDto } from './dto';
 import { MessageService } from './message.service';
 import { GetUser } from 'src/auth/decorators';
@@ -15,5 +15,10 @@ export class MessageController {
     @Param('chatspaceId') chatspaceId: string,
   ) {
     return await this.message.sendMessage(userId, dto, chatspaceId);
+  }
+
+  @Get(':chatspaceId')
+  async receiveMessages(@Param('chatspaceId') chatspaceId: string) {
+    return await this.message.receiveMessages(chatspaceId);
   }
 }
