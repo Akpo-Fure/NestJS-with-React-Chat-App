@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotAcceptableException,
+  NotFoundException,
+} from '@nestjs/common';
 import { SendRequestDTO } from './dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from '@prisma/client';
@@ -12,6 +16,8 @@ export class InviteService {
         email: dto.email,
       },
     });
+    if (senderId === receiver.id)
+      throw new NotAcceptableException('Cant send invite to yourself');
     if (!receiver) throw new NotFoundException('User not found');
     const invite = await this.prisma.chatSpaceInvite.create({
       data: {
@@ -39,6 +45,11 @@ export class InviteService {
       },
       include: {
         users: true,
+      },
+    });
+    await this.prisma.chatSpaceInvite.delete({
+      where: {
+        id: invite.id,
       },
     });
 

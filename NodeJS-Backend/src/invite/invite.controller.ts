@@ -1,9 +1,9 @@
-import { Controller, Param, Post, UseGuards } from '@nestjs/common';
-import JwtGuard from '../auth/guards/jwt.guard';
-import { GetUser } from 'src/auth/decorators';
+import { Body, Controller, Param, Post, UseGuards } from '@nestjs/common';
+import { User } from '@prisma/client';
+import { GetUser } from '../auth/decorators';
 import { InviteService } from './invite.service';
 import { SendRequestDTO } from './dto';
-import { User } from '@prisma/client';
+import { JwtGuard } from '../auth/guards';
 
 @UseGuards(JwtGuard)
 @Controller('user/invite')
@@ -12,7 +12,7 @@ export class InviteController {
   @Post('')
   async sendFriendRequest(
     @GetUser('id') senderId: string,
-    dto: SendRequestDTO,
+    @Body() dto: SendRequestDTO,
   ) {
     return await this.invite.sendFriendRequest(senderId, dto);
   }
